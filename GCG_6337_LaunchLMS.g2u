@@ -1,0 +1,66 @@
+﻿Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Author: Daniel Duncan
+'Customer: GSS
+'Program Name: LMS Launcher
+'Quote: 
+'GAP: 6337
+
+f.Intrinsic.Control.Try
+	v.Local.sFileFolder.Declare
+	v.Local.bExists.Declare
+	v.Local.sURL.Declare
+	
+	'Check CUSTOM folder for project folder and create if not there
+	f.Intrinsic.String.Build("{0}\CUSTOM\6337\",V.Caller.GlobalDir,V.Local.sFileFolder)
+	F.Intrinsic.File.DirExists(V.Local.sFileFolder,v.Local.bExists)
+	f.Intrinsic.Control.If(v.Local.bExists,=,false)
+		f.Intrinsic.File.CreateDir(v.Local.sFileFolder)
+	f.Intrinsic.Control.EndIf
+	
+	'Check for presence of file.  Prompt user for URL if not there.
+	f.Intrinsic.String.Build("{0}GCG_6337.txt",v.Local.sFileFolder,v.Local.sFileFolder)
+	f.Intrinsic.File.Exists(v.Local.sFileFolder,v.Local.bExists)
+	f.Intrinsic.Control.If(v.Local.bExists,=,False)
+		'Tell user the URL has not been set yet.
+		f.Intrinsic.UI.Msgbox("It appears your company's LMS URL has not been set in this project's settings.  Please enter it in the file that will appear after this window is closed.  Then, run this menu item again.","Missing Settings",0)
+		
+		'Create a blank file and open it.
+		f.Intrinsic.File.String2File(v.Local.sFileFolder,v.Local.sURL)
+		F.Intrinsic.Task.ShellExec(0,"Open",v.Local.sFileFolder,"","",0)
+	f.Intrinsic.Control.Else
+		'Read in URL from temp file
+		f.Intrinsic.File.File2String(v.Local.sFileFolder,v.Local.sURL)
+		
+		'Check that the file contains a valid URL
+		f.Intrinsic.Control.If(v.Local.sURL,<>,"")
+			'Launch URL
+			f.Intrinsic.Control.If(v.Local.sURL.left4,<>,"http")
+				f.Intrinsic.String.build("https://{0}",v.Local.sURL,v.Local.sURL)
+			f.Intrinsic.Control.EndIf
+			F.Intrinsic.Task.ShellExec(0,"Open",v.Local.sURL,"","",0)
+		f.Intrinsic.Control.Else
+			f.Intrinsic.UI.Msgbox("Invalid URL specified in the file.  URL must begin with https://     Check the file and try again.","Error Launching")
+			F.Intrinsic.Task.ShellExec(0,"Open",v.Local.sFileFolder,"","",0)
+		f.Intrinsic.Control.EndIf		
+	f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.Catch
+	f.Intrinsic.Control.CallSub(ErrorMsg, CurrentSub, v.Ambient.CurrentSubroutine)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.ErrorMsg.Start
+v.Local.sError.Declare
+
+'Generic Error message.
+f.Intrinsic.String.Build("Project GCG_6337_LaunchLMS.g2u {0}{0}Subroutine: {1}{0}Error: {2} with Description: {3}", v.Ambient.NewLine, v.Args.CurrentSub, v.Ambient.ErrorNumber, v.Ambient.ErrorDescription, v.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+Program.Sub.ErrorMsg.End
+
+Program.Sub.Comments.Start
+${$5$}$2.0.0.0$}$2
+${$6$}$dduncan$}$20210427103503600$}$r0o+00bj735YsiGsQ60YIo/Zb+26OZQG21pIkAjD2cKf2WtK81PSD2zOMkF6MeDe03VFcta1fdc=
+Program.Sub.Comments.End
